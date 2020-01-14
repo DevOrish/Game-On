@@ -1,0 +1,49 @@
+// Aspect ratios
+.ratio-16-9 {
+    @include aspect-ratio(100, 56);
+}
+
+.ratio-square {
+    @include aspect-ratio(100, 100);
+}
+
+.ratio-card {
+    @include aspect-ratio(100, 80);
+}
+
+.ratio-poster {
+    @include aspect-ratio(100, 150);
+}
+
+// flex helpers
+.flex {
+    display: flex;
+    &.col {
+        flex-direction: column;
+    }
+    &.center{
+        justify-content: center;
+        align-items: center;
+    }
+    &.space-between {
+        justify-content: space-between;
+    }
+    &.space-around {
+        justify-content: space-around;
+    }
+    &.justify-center {
+        justify-content: center;
+    }
+    &.align-center {
+        align-items: center;
+    }
+}
+
+// Fonts
+
+
+.fs18 { font-size: rem(18px) }
+.fs20 { font-size: rem(20px) }
+.fs25 { font-size: rem(25px) }
+.fs30 { font-size: rem(30px) }
+.fs35 { font-size: rem(35px) }

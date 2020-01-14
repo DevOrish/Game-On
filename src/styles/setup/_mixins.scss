@@ -1,0 +1,111 @@
+/* Media queries Breakpoint mixins */
+@mixin for-very-very-very-narrow-layout {
+    @media (min-width: 350px) {
+        @content;
+    }
+}
+@mixin for-very-very-narrow-layout {
+    @media (min-width: 450px) {
+        @content;
+    }
+}
+@mixin for-very-narrow-layout {
+    @media (min-width: 650px) {
+        @content;
+    }
+}
+@mixin for-750-layout {
+    @media (min-width: 750px) {
+        @content;
+    }
+}
+@mixin for-narrow-layout {
+    @media (min-width: $break-narrow) {
+        @content;
+    }
+}
+@mixin for-mid-narrow-layout {
+    @media (min-width: $break-mid-narrow) {
+        @content;
+    }
+}
+
+@mixin for-medium-layout {
+    @media (min-width: $break-medium) {
+        @content;
+    }
+}
+
+@mixin for-normal-layout {
+    @media (min-width: $break-normal) {
+        @content;
+    }
+}
+@mixin for-mid-wide-layout {
+    @media (min-width: $break-mid-wide) {
+        @content;
+    }
+}
+@mixin for-wide-layout {
+    @media (min-width: $break-wide) {
+        @content;
+    }
+}
+
+
+/* Media  Mixins */
+
+//aspect ratio mixin
+@mixin aspect-ratio($width, $height) {
+    position: relative;
+    overflow: hidden;
+    &:before {
+        content: "";
+        display: block;
+        width: 100%;
+        padding-top: ($height / $width) * 100%;
+    }
+    >* {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    >img {
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+// Mixin for removing hover efects on iphone screen
+@mixin hover-supported {
+    @media not all and (pointer: coarse) {
+        &:hover {
+            @content;
+        }
+    }
+}
+
+//ori mixin
+@mixin guide-card-aspect-ratio($width, $height) {
+    position: relative;
+    overflow: hidden;
+    &:before {
+        content: "";
+        display: block;
+        width: 100%;
+        padding-top: ($height / $width) * 100%;
+    }
+    >* {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    >img {
+        height: 100%;
+        object-fit: cover;
+    }
+}

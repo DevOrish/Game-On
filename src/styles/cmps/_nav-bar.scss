@@ -1,0 +1,23 @@
+nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(124, 124, 124);
+    height: 65px;
+    padding: 15px;
+    a{
+        text-decoration: none;
+        color: unset;
+        &:not(:last-child){
+            margin-right: 10px;
+        }
+        &:hover{
+            text-decoration: underline;
+        }
+    }
+    .logo{
+        span{
+            color: gold;
+        }
+    }
+}
