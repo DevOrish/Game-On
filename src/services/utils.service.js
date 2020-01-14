@@ -4,7 +4,8 @@ export default {
     makeId,
     saveToStorage,
     loadFromStorage,
-    showToast
+    showToast,
+    getRandomIntInclusive,
 }
 
 function makeId(length = 10) {
@@ -27,15 +28,21 @@ function loadFromStorage(key) {
     return value;
 }
 
-function showToast(txt,type){
+function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function showToast(txt, type) {
     const msg = Swal.mixin({
         toast: true,
         position: 'top-start',
         showConfirmButton: false,
         timer: 3000,
-      })
-      msg.fire({
+    })
+    msg.fire({
         icon: type,
         title: txt
-      })
+    })
 }
