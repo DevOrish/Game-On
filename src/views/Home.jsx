@@ -15,7 +15,8 @@ class Home extends React.Component {
         const { user } = this.props
         return (
             <>
-            <h1>Hello Snowboardddd</h1>
+                <h1>Hello Snowboardddd</h1>
+                <Link to="/game/doodoohead">Play DoodooHead</Link>
             </>
         )
     }
