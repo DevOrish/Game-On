@@ -33,6 +33,7 @@ function createCards() {
     return cards
 }
 
+
 export default {
     createCards
 }
