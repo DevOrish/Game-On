@@ -16,20 +16,17 @@ function createCards() {
         }
         count++
     }
-    cards.unshift(
-        {
-            num: 1,
-            suit: 'joker',
-            isShown: true,
-            _id: 'j1'
-        },
-        {
-            num: 1,
-            suit: 'joker',
-            isShown: true,
-            _id: 'j2'
-        }
-    )
+    count=1
+    while(count<3){
+        cards.unshift(
+            {
+                num: 1,
+                suit: 'joker',
+                isShown: true,
+                _id: `j${count}`
+            })
+            count++;
+    }
     return cards
 }
 
