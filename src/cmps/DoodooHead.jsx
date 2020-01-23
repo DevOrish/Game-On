@@ -2,12 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import doodooService from '../services/games/doodoohead.service'
 import utilsService from '../services/utils.service'
-import { get } from 'http';
 
 class DoodooHead extends React.Component {
     state = {
         cards: null,
-        cardSelectorCount: 3,
         p1: {
             _id: 'p1',
             lossCount: 0,
@@ -21,12 +19,17 @@ class DoodooHead extends React.Component {
             onTable: [],
         }
     }
-    board=[];
-
+    board = [];
+    last4Cards = [];
+    currPlayer = null;
+    magicCards = [2, 3, 10]
+    // isGameOn = false;
     async componentDidMount() {
         await this.setState({ cards: doodooService.createCards() })
         await this.drawStartingHands()
-        console.log(this.state);
+        const firstPlayer = utilsService.getRandomIntInclusive(1, 2)
+        this.currPlayer = 'p' + firstPlayer;
+        console.log(this.state, this.currPlayer);
     }
 
     drawCard = (player, cardDest = 'inHand') => {
@@ -64,10 +67,10 @@ class DoodooHead extends React.Component {
         const currPlayer = this.state[playerId]
         const handCards = currPlayer.inHand
         const currCardIdx = currPlayer.inHand.findIndex(card => card._id === cardId)
+        if (currPlayer.onTable.length === 6) return this.playCard(currPlayer, currCardIdx)
         const card = handCards.splice(currCardIdx, 1)
         const tableCards = currPlayer.onTable
-        if(currPlayer.onTable.length===6)return this.playCard(card, currPlayer,handCards)
-        // this.state.cardSelectorCount --
+        console.log(currPlayer);
         tableCards.push(card[0])
         this.setState(prevState => (
             {
@@ -81,24 +84,74 @@ class DoodooHead extends React.Component {
         ))
     }
 
-    playCard=(card, currPlayer, playerHeand)=>{
-        if(this.state.p1.onTable.length<6 || this.state.p2.onTable.length<6)return
-        this.board.push(card);
+    playCard = (currPlayer, currCardIdx) => {
+        if (this.state.p1.onTable.length < 6 || this.state.p2.onTable.length < 6) return
+        const handCards = currPlayer.inHand
+        let card = handCards.slice(currCardIdx, currCardIdx + 1)
+        debugger
+        if (this.board.length === 0 && card[0].num === 4) {
+            card = handCards.splice(currCardIdx, 1)
+            this.currPlayer = currPlayer._id;
+        }
+        if (currPlayer._id === this.currPlayer) return
+        if (card[0].num !== '1') {
+            const isCardValid = this.checkCard(card[0])
+            if (!isCardValid) {
+                console.log('Card Not Valid');
+                return
+            }
+
+        }
+        //todo joker
+
+        card = handCards.splice(currCardIdx, 1)
+        this.board.unshift(card[0]);
+        // this.last4Cards.push(card.num);
         this.drawCard(currPlayer._id);
+        this.currPlayer = currPlayer._id;
         console.log(this.state[currPlayer._id]);
+    }
+
+    checkCard = (card) => {
+        let currCardOnBoard = this.board[0]
+        if (currCardOnBoard && currCardOnBoard.num === 3) {
+            currCardOnBoard = this.board[1]
+            if (currCardOnBoard && currCardOnBoard.num === 3) currCardOnBoard = this.board[2]
+        }
+        if (!currCardOnBoard) return true;
+        switch (currCardOnBoard.num) {
+            case 7:
+                if (card.num <= 7) return true;
+                else return false;
+            case 12:
+                if (card.num >= 12) return true;
+                else return false;
+            case 2:
+                if (card.suit === currCardOnBoard.suit) return true;
+                else return false;
+            default:
+                break;
+        }
+        const isMagicCard = this.isMagic(card.num)
+        if (currCardOnBoard.num <= card.num || isMagicCard) {
+            return true;
+        }
+        else return false;
+    }
+
+    isMagic = (card) => {
+        return this.magicCards.includes(num => num === card)
     }
 
     renderCards = (player, cardDest = 'inHand') => {
         return player[cardDest].map(card => {
-            if (cardDest === 'onTable') {
-                return <button key={card._id} disabled>{card.num + card.suit}</button>
-            }
+            if (cardDest === 'onTable') return <button key={card._id} disabled>{card.num + card.suit}</button>
             return <button onClick={() => this.moveCardsToTable(card._id, player._id)} key={card._id}>{card.num + card.suit}</button>
         })
     }
     renderBoardCards = () => {
-        if(this.board.length>0)return this.board.map(card => {
-            return <button key={card[0]._id} disabled>{card[0].num + card[0].suit}</button>
+        if (this.board.length > 0) return this.board.map(card => {
+            return <button key={card._id} disabled>{card.num + card.suit}</button>
         })
     }
 
