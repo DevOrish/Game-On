@@ -21,7 +21,6 @@ class DoodooHead extends React.Component {
             onTable: [],
         }
     }
-
     board=[];
 
     async componentDidMount() {
@@ -36,7 +35,7 @@ class DoodooHead extends React.Component {
         const card = cards.splice(currCardIdx, 1)
 
         if (cardDest === 'onTable') card[0].isShown = false
-        const newHand = JSON.parse(JSON.stringify(this.state[player][cardDest]))
+        let newHand = JSON.parse(JSON.stringify(this.state[player][cardDest]))
         newHand.push(card[0])
         this.setState({ cards })
         this.setState(prevState => (
@@ -67,11 +66,9 @@ class DoodooHead extends React.Component {
         const currCardIdx = currPlayer.inHand.findIndex(card => card._id === cardId)
         const card = handCards.splice(currCardIdx, 1)
         const tableCards = currPlayer.onTable
-        if(this.state.cardSelectorCount===0)return this.playCard(card, currPlayer,handCards)
-        this.state.cardSelectorCount --
-        // this.setState({ cardSelectCount: this.state.cardSelectorCount -- })        
+        if(currPlayer.onTable.length===6)return this.playCard(card, currPlayer,handCards)
+        // this.state.cardSelectorCount --
         tableCards.push(card[0])
-        this.setState({ cards: handCards })
         this.setState(prevState => (
             {
                 ...prevState,
@@ -85,17 +82,9 @@ class DoodooHead extends React.Component {
     }
 
     playCard=(card, currPlayer, playerHeand)=>{
+        if(this.state.p1.onTable.length<6 || this.state.p2.onTable.length<6)return
         this.board.push(card);
-        this.setState(prevState => (
-            {
-                ...prevState,
-                [currPlayer]: {
-                    ...prevState[currPlayer],
-                    inHand: playerHeand
-                }
-            }
-        ))
-        // this.drawCard(currPlayer)
+        this.drawCard(currPlayer._id);
         console.log(this.state[currPlayer._id]);
     }
 
@@ -107,12 +96,13 @@ class DoodooHead extends React.Component {
             return <button onClick={() => this.moveCardsToTable(card._id, player._id)} key={card._id}>{card.num + card.suit}</button>
         })
     }
+    renderBoardCards = () => {
+        if(this.board.length>0)return this.board.map(card => {
+            return <button key={card[0]._id} disabled>{card[0].num + card[0].suit}</button>
+        })
+    }
 
     isCardSelect = true
-
-    get cardSelectCount() {
-        return this.state.cardSelectorCount
-    }
     render() {
         const p1 = this.state.p1
         const p2 = this.state.p2
@@ -129,7 +119,7 @@ class DoodooHead extends React.Component {
                     </section>
                     <section className='board'>
                         {this.state.cardSelectorCount > 0 && <h3>Pick {this.state.cardSelectorCount} cards to put on the table</h3>}
-                        <div className='cardBank'></div>
+                        <div className='cardBank'>{this.renderBoardCards()}</div>
                     </section>
                     <section className='p2'>
                         p2
