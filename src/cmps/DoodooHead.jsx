@@ -86,31 +86,37 @@ class DoodooHead extends React.Component {
 
     playCard = (currPlayer, currCardIdx) => {
         if (this.state.p1.onTable.length < 6 || this.state.p2.onTable.length < 6) return
+        let isEruped = false
         const handCards = currPlayer.inHand
         let card = handCards.slice(currCardIdx, currCardIdx + 1)
-        debugger
         if (this.board.length === 0 && card[0].num === 4) {
-            card = handCards.splice(currCardIdx, 1)
             this.currPlayer = currPlayer._id;
+            isEruped = true;
         }
-        if (currPlayer._id === this.currPlayer) return
-        if (card[0].num !== '1') {
+        if (!isEruped && currPlayer._id === this.currPlayer) return
+        if (!isEruped && card[0].num !== '1') {
             const isCardValid = this.checkCard(card[0])
             if (!isCardValid) {
                 console.log('Card Not Valid');
                 return
             }
-
         }
-        //todo joker
-
         card = handCards.splice(currCardIdx, 1)
-        this.board.unshift(card[0]);
-        // this.last4Cards.push(card.num);
-        this.drawCard(currPlayer._id);
-        this.currPlayer = currPlayer._id;
-        console.log(this.state[currPlayer._id]);
-    }
+        switch (card[0].num) {
+            case 10:
+                this.board = [];
+                break;
+            case 8:
+                this.board.unshift(card[0]);
+                break;
+            default:
+                this.board.unshift(card[0]);
+                this.currPlayer = currPlayer._id;
+                break;
+            }
+            // this.last4Cards.push(card.num);
+            this.drawCard(currPlayer._id);
+        }
 
     checkCard = (card) => {
         let currCardOnBoard = this.board[0]
@@ -127,20 +133,18 @@ class DoodooHead extends React.Component {
                 if (card.num >= 12) return true;
                 else return false;
             case 2:
-                if (card.suit === currCardOnBoard.suit) return true;
+                if (card.suit === currCardOnBoard.suit || card.num === 2) return true;
                 else return false;
             default:
                 break;
         }
         const isMagicCard = this.isMagic(card.num)
-        if (currCardOnBoard.num <= card.num || isMagicCard) {
-            return true;
-        }
+        if (isMagicCard || currCardOnBoard.num <= card.num)return true;
         else return false;
     }
 
     isMagic = (card) => {
-        return this.magicCards.includes(num => num === card)
+        return this.magicCards.includes(card)
     }
 
     renderCards = (player, cardDest = 'inHand') => {
@@ -153,6 +157,33 @@ class DoodooHead extends React.Component {
         if (this.board.length > 0) return this.board.map(card => {
             return <button key={card._id} disabled>{card.num + card.suit}</button>
         })
+    }
+    pickUpCards= (currPlayer) =>{
+        let handCards = currPlayer.inHand;
+        let newHand = this.board
+        newHand.concat(handCards)
+        console.log(newHand);
+        this.setState(prevState => (
+            {
+                ...prevState,
+                [currPlayer._id]: {
+                    ...prevState[currPlayer._id],
+                    inHand: newHand
+                }
+            }
+        ))
+        this.board = [];
+    }
+    renderPickupBtn = () =>{
+        if(this.currPlayer){
+            const currPlayer = (this.state[this.currPlayer]._id==='p1')?this.state['p2']:this.state['p1']
+            const hasValidCard = currPlayer.inHand.some(card=>this.checkCard(card))
+            console.log(hasValidCard);
+            
+            if(hasValidCard)return <button disabled>Use Your Cards</button>
+            else return <button onClick={() => this.pickUpCards(currPlayer)} >{hasValidCard}</button>
+        }else return <button disabled>no cards yet</button>
+
     }
 
     isCardSelect = true
@@ -171,8 +202,10 @@ class DoodooHead extends React.Component {
                         {this.renderCards(p1)}
                     </section>
                     <section className='board'>
-                        {this.state.cardSelectorCount > 0 && <h3>Pick {this.state.cardSelectorCount} cards to put on the table</h3>}
+                        {/* {this.state.cardSelectorCount > 0 && <h3>Pick {this.state.cardSelectorCount} cards to put on the table</h3>} */}
                         <div className='cardBank'>{this.renderBoardCards()}</div>
+                        <div className='pickup-btn'>{this.renderPickupBtn()}</div>
+
                     </section>
                     <section className='p2'>
                         p2
