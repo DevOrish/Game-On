@@ -22,8 +22,8 @@ class DoodooHead extends React.Component {
     board = [];
     last4Cards = [];
     currPlayer = null;
-    magicCards = [2, 3, 10]
-    // isGameOn = false;
+    magicCards = [1,2, 3, 10]
+
     async componentDidMount() {
         await this.setState({ cards: doodooService.createCards() })
         await this.drawStartingHands()
@@ -94,14 +94,16 @@ class DoodooHead extends React.Component {
             isEruped = true;
         }
         if (!isEruped && currPlayer._id === this.currPlayer) return
-        if (!isEruped && card[0].num !== '1') {
+        if (!isEruped && card[0].num !== 1) {
             const isCardValid = this.checkCard(card[0])
             if (!isCardValid) {
                 console.log('Card Not Valid');
                 return
             }
         }
+        // const cards = findDuplicates(handCards,card[0].num)
         card = handCards.splice(currCardIdx, 1)
+
         switch (card[0].num) {
             case 10:
                 this.board = [];
@@ -109,13 +111,21 @@ class DoodooHead extends React.Component {
             case 8:
                 this.board.unshift(card[0]);
                 break;
+            case 1:
+                let player = (this.state[this.currPlayer]._id==='p1')?this.state['p1']:this.state['p2']
+                this.pickUpCards(player,'joker')
+                this.currPlayer = currPlayer._id;
+                break;
             default:
                 this.board.unshift(card[0]);
                 this.currPlayer = currPlayer._id;
                 break;
             }
-            // this.last4Cards.push(card.num);
-            this.drawCard(currPlayer._id);
+            const isSame4 = this.checkLast4();
+            console.log(isSame4);
+            
+            if(this.state.cards.length>0 && handCards.length<3)this.drawCard(currPlayer._id);
+            else this.setUpdatedHand(currPlayer._id,handCards)
         }
 
     checkCard = (card) => {
@@ -130,7 +140,7 @@ class DoodooHead extends React.Component {
                 if (card.num <= 7) return true;
                 else return false;
             case 12:
-                if (card.num >= 12) return true;
+                if (card.num >= 12||card.num === 1) return true;
                 else return false;
             case 2:
                 if (card.suit === currCardOnBoard.suit || card.num === 2) return true;
@@ -142,9 +152,29 @@ class DoodooHead extends React.Component {
         if (isMagicCard || currCardOnBoard.num <= card.num)return true;
         else return false;
     }
+    checkLast4 = ()=>{
+        const board = this.board;
+        if(board.length>3&&board[0].num===board[1].num===board[2].num===board[3].num)return true
+        else return false
+    }
+    //
+    // findDuplicates = (hand,cardNum)=>{
 
+    // }
     isMagic = (card) => {
         return this.magicCards.includes(card)
+    }
+
+    setUpdatedHand = (player,playerHand)=>{
+        this.setState(prevState => (
+            {
+                ...prevState,
+                [player]: {
+                    ...prevState[player],
+                    inHand: playerHand
+                }
+            }
+        ))
     }
 
     renderCards = (player, cardDest = 'inHand') => {
@@ -158,11 +188,11 @@ class DoodooHead extends React.Component {
             return <button key={card._id} disabled>{card.num + card.suit}</button>
         })
     }
-    pickUpCards= (currPlayer) =>{
+    pickUpCards = (currPlayer, cause = 'noCards') => {
         let handCards = currPlayer.inHand;
-        let newHand = this.board
+        let boardCards = this.board;
+        const newHand = handCards.concat(boardCards)
         newHand.concat(handCards)
-        console.log(newHand);
         this.setState(prevState => (
             {
                 ...prevState,
@@ -173,6 +203,8 @@ class DoodooHead extends React.Component {
             }
         ))
         this.board = [];
+        if(cause==='noCards') this.currPlayer = (this.state[this.currPlayer]._id==='p1')?'p2':'p1';
+        
     }
     renderPickupBtn = () =>{
         if(this.currPlayer){
