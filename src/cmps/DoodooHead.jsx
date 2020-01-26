@@ -17,12 +17,14 @@ class DoodooHead extends React.Component {
             lossCount: 0,
             inHand: [],
             onTable: [],
-        }
+        },
     }
+    isMultipleCards = false
     board = [];
     last4Cards = [];
     currPlayer = null;
-    magicCards = [1,2, 3, 10]
+    magicCards = [1, 2, 3, 10]
+    isPlayButton = false
 
     async componentDidMount() {
         await this.setState({ cards: doodooService.createCards() })
@@ -70,7 +72,6 @@ class DoodooHead extends React.Component {
         if (currPlayer.onTable.length === 6) return this.playCard(currPlayer, currCardIdx)
         const card = handCards.splice(currCardIdx, 1)
         const tableCards = currPlayer.onTable
-        console.log(currPlayer);
         tableCards.push(card[0])
         this.setState(prevState => (
             {
@@ -101,7 +102,13 @@ class DoodooHead extends React.Component {
                 return
             }
         }
-        // const cards = findDuplicates(handCards,card[0].num)
+        const sameCardsIdxs = this.findDuplicates(handCards, card[0])
+        if (sameCardsIdxs.length > 1) {
+            this.isPlayButton = true
+            this.isMultipleCards = true
+            return
+        } else if (!sameCardsIdxs.length) return
+
         card = handCards.splice(currCardIdx, 1)
 
         switch (card[0].num) {
@@ -112,21 +119,21 @@ class DoodooHead extends React.Component {
                 this.board.unshift(card[0]);
                 break;
             case 1:
-                let player = (this.state[this.currPlayer]._id==='p1')?this.state['p1']:this.state['p2']
-                this.pickUpCards(player,'joker')
+                let player = (this.state[this.currPlayer]._id === 'p1') ? this.state['p1'] : this.state['p2']
+                this.pickUpCards(player, 'joker')
                 this.currPlayer = currPlayer._id;
                 break;
             default:
                 this.board.unshift(card[0]);
                 this.currPlayer = currPlayer._id;
                 break;
-            }
-            const isSame4 = this.checkLast4();
-            console.log(isSame4);
-            
-            if(this.state.cards.length>0 && handCards.length<3)this.drawCard(currPlayer._id);
-            else this.setUpdatedHand(currPlayer._id,handCards)
         }
+        const isSame4 = this.checkLast4();
+        console.log(isSame4);
+
+        if (this.state.cards.length > 0 && handCards.length < 3) this.drawCard(currPlayer._id);
+        else this.setUpdatedHand(currPlayer._id, handCards)
+    }
 
     checkCard = (card) => {
         let currCardOnBoard = this.board[0]
@@ -140,7 +147,7 @@ class DoodooHead extends React.Component {
                 if (card.num <= 7) return true;
                 else return false;
             case 12:
-                if (card.num >= 12||card.num === 1) return true;
+                if (card.num >= 12 || card.num === 1) return true;
                 else return false;
             case 2:
                 if (card.suit === currCardOnBoard.suit || card.num === 2) return true;
@@ -149,23 +156,34 @@ class DoodooHead extends React.Component {
                 break;
         }
         const isMagicCard = this.isMagic(card.num)
-        if (isMagicCard || currCardOnBoard.num <= card.num)return true;
+        if (isMagicCard || currCardOnBoard.num <= card.num) return true;
         else return false;
     }
-    checkLast4 = ()=>{
+    checkLast4 = () => {
         const board = this.board;
-        if(board.length>3&&board[0].num===board[1].num===board[2].num===board[3].num)return true
+        if (board.length > 3 && board[0].num === board[1].num === board[2].num === board[3].num) return true
         else return false
     }
-    //
-    // findDuplicates = (hand,cardNum)=>{
 
-    // }
+    findDuplicates = (hand, card) => {
+        let sameCardIdx = [];
+        if (card.isSelected || this.isMultipleCards) {
+            card.isSelected = !card.isSelected // CHANGE IT WITH SETSTATE
+            return []
+        }
+        for (let i = 0; i < hand.length; i++) {
+            if (hand[i].num === card.num) {
+                hand[i].isSelected = true
+                sameCardIdx.push(i)
+            }
+        }
+        return sameCardIdx;
+    }
     isMagic = (card) => {
         return this.magicCards.includes(card)
     }
 
-    setUpdatedHand = (player,playerHand)=>{
+    setUpdatedHand = (player, playerHand) => {
         this.setState(prevState => (
             {
                 ...prevState,
@@ -180,7 +198,7 @@ class DoodooHead extends React.Component {
     renderCards = (player, cardDest = 'inHand') => {
         return player[cardDest].map(card => {
             if (cardDest === 'onTable') return <button key={card._id} disabled>{card.num + card.suit}</button>
-            return <button onClick={() => this.moveCardsToTable(card._id, player._id)} key={card._id}>{card.num + card.suit}</button>
+            return <button className={(card.isSelected ? " selectedCard " : "")} onClick={() => this.moveCardsToTable(card._id, player._id)} key={card._id}>{card.num + card.suit}</button>
         })
     }
     renderBoardCards = () => {
@@ -203,18 +221,18 @@ class DoodooHead extends React.Component {
             }
         ))
         this.board = [];
-        if(cause==='noCards') this.currPlayer = (this.state[this.currPlayer]._id==='p1')?'p2':'p1';
-        
+        if (cause === 'noCards') this.currPlayer = (this.state[this.currPlayer]._id === 'p1') ? 'p2' : 'p1';
+
     }
-    renderPickupBtn = () =>{
-        if(this.currPlayer){
-            const currPlayer = (this.state[this.currPlayer]._id==='p1')?this.state['p2']:this.state['p1']
-            const hasValidCard = currPlayer.inHand.some(card=>this.checkCard(card))
+    renderPickupBtn = () => {
+        if (this.currPlayer) {
+            const currPlayer = (this.state[this.currPlayer]._id === 'p1') ? this.state['p2'] : this.state['p1']
+            const hasValidCard = currPlayer.inHand.some(card => this.checkCard(card))
             console.log(hasValidCard);
-            
-            if(hasValidCard)return <button disabled>Use Your Cards</button>
-            else return <button onClick={() => this.pickUpCards(currPlayer)} >{hasValidCard}</button>
-        }else return <button disabled>no cards yet</button>
+
+            if (hasValidCard) return <button disabled>Use Your Cards</button>
+            else return <button onClick={() => this.pickUpCards(currPlayer)} >PICKUP</button>
+        } else return <button disabled>no cards yet</button>
 
     }
 
@@ -226,6 +244,7 @@ class DoodooHead extends React.Component {
             <>
                 <h1 className='header'>DoodooHead</h1>
                 <main className='game flex col'>
+                    {this.isPlayButton && <button> Play Cards</button>}
                     <section className='p1'>
                         p1
                         <div className='hiddenCards'>

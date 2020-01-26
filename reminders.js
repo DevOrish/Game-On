@@ -21,7 +21,7 @@ function createCards() {
         count++
     }
     console.log(cards);
-    
+
     return cards
 }
 
@@ -47,3 +47,18 @@ function createCards() {
 //         }
 //     ))
 // }
+
+function perm(arr) {
+    let res = [];
+    for (let i = 0; i < arr.length; i++) {
+        let rest = perm(arr.slice(0, i).concat(arr.slice(i + 1)))
+        if (!rest.length) {
+            res.push([arr[i]])
+        } else {
+            for (let j = 0; j < rest.length; j++) {
+                res.push([arr[i]].concat(rest[j]))
+            }
+        }
+    }
+    return res;
+}

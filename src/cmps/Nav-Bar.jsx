@@ -5,7 +5,7 @@ export function NavBar() {
     return (
         <nav>
             <div className="logo">
-                <h1>Mr. <span>₿</span></h1>
+                <h1>Game <span>On</span></h1>
             </div>
             <div>
                 <Link to="/home">Home</Link>

@@ -9,6 +9,7 @@ function createCards() {
             num,
             suit: suits[count - 1],
             isShown: true,
+            isSelected: false,
         })
         if (count === 4) {
             count = 0
@@ -16,16 +17,17 @@ function createCards() {
         }
         count++
     }
-    count=1
-    while(count<3){
+    count = 1
+    while (count < 3) {
         cards.unshift(
             {
                 num: 1,
                 suit: 'joker',
                 isShown: true,
+                isSelected: false,
                 _id: `j${count}`
             })
-            count++;
+        count++;
     }
     return cards
 }
